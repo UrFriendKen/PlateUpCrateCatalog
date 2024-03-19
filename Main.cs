@@ -10,7 +10,7 @@ namespace KitchenCrateCatalog
     {
         public const string MOD_GUID = $"IcedMilo.PlateUp.{MOD_NAME}";
         public const string MOD_NAME = "Crate Catalog";
-        public const string MOD_VERSION = "0.1.0";
+        public const string MOD_VERSION = "0.1.1";
 
         internal static readonly ViewType CatalogViewType = (ViewType)HashUtils.GetID($"{MOD_GUID}:CatalogViewType");
 
