@@ -54,13 +54,23 @@ namespace KitchenCrateCatalog
                     });
 
                     bool isComplete = false;
+                    int selectedCrateApplianceID = 0;
                     if (ApplyUpdates(view, delegate (ResponseData response)
                     {
                         isComplete = response.IsComplete;
+                        selectedCrateApplianceID = response.SelectedItemID;
                     }, only_final_update: true))
                     {
                         menuLink.IsComplete = isComplete;
                         Set(entities[i], menuLink);
+                        if (isComplete && selectedCrateApplianceID != 0)
+                        {
+                            Entity request = EntityManager.CreateEntity(typeof(CMoveApplianceCratesToRackRequest), typeof(CDoNotPersist));
+                            Set(request, new CMoveApplianceCratesToRackRequest()
+                            {
+                                ID = selectedCrateApplianceID
+                            });
+                        }
                     }
                 }
             }
@@ -88,6 +98,9 @@ namespace KitchenCrateCatalog
         {
             [Key(0)]
             public bool IsComplete;
+
+            [Key(1)]
+            public int SelectedItemID;
         }
 
         private bool IsComplete;
@@ -101,6 +114,8 @@ namespace KitchenCrateCatalog
         private PanelElement Panel;
 
         private CatalogMenu Menu;
+
+        private int SelectedItemID;
         
         public override void Initialise()
         {
@@ -124,6 +139,11 @@ namespace KitchenCrateCatalog
             Menu.OnRedraw += delegate
             {
                 Panel?.SetTarget(ModuleList);
+            };
+            Menu.OnItemClick += delegate (object _, CatalogMenu.Item item)
+            {
+                SelectedItemID = item.ID;
+                CloseCatalog();
             };
         }
 
@@ -164,6 +184,7 @@ namespace KitchenCrateCatalog
 
                         return new CatalogMenu.Item()
                         {
+                            ID = kvp.Key,
                             Name = name,
                             Count = kvp.Value
                         };
@@ -179,6 +200,7 @@ namespace KitchenCrateCatalog
             {
                 state = new ResponseData
                 {
+                    SelectedItemID = SelectedItemID,
                     IsComplete = IsComplete
                 };
             }
@@ -200,6 +222,8 @@ namespace KitchenCrateCatalog
                 return;
             }
             Menu.SetItems(items.ToList());
+            Menu.SetSelectable(Session.CurrentGameNetworkMode == GameNetworkMode.Host);
+            SelectedItemID = 0;
             Menu.SetupWithPlayer(PlayerID);
             Panel.SetColour(PlayerID);
         }

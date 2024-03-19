@@ -17,6 +17,7 @@ namespace KitchenCrateCatalog
     {
         public struct Item
         {
+            public int ID;
             public string Name;
             public int Count;
         }
@@ -27,9 +28,13 @@ namespace KitchenCrateCatalog
 
         protected List<Item> Items;
 
+        protected bool IsSelectable;
+
         public int ItemsPerPage;
 
         public EventHandler OnRedraw;
+
+        public EventHandler<Item> OnItemClick;
 
         public CatalogMenu(Transform container, ModuleList module_list)
             : base(container, module_list)
@@ -70,12 +75,23 @@ namespace KitchenCrateCatalog
             {
                 hasItem = true;
                 Item item = Items[i];
-                AddLabel($"{item.Name ?? "Unknown Item"} - {item.Count}");
+                string itemText = $"{item.Name ?? "Unknown Item"} - {item.Count}";
+                if (IsSelectable)
+                {
+                    AddButton(itemText, delegate (int _)
+                    {
+                        OnItemClick(this, item);
+                    });
+                }
+                else
+                {
+                    AddLabel(itemText);
+                }
             }
 
             if (!hasItem)
             {
-                AddLabel($"No items!");
+                AddInfo($"No items!");
             }
 
             New<SpacerElement>();
@@ -90,6 +106,13 @@ namespace KitchenCrateCatalog
         public void SetItems(List<Item> items)
         {
             Items = items?.OrderByDescending(item => item.Count).ToList() ?? new List<Item>();
+            if ((ModuleList.Modules?.Count ?? 0) > 0)
+                Redraw();
+        }
+
+        public void SetSelectable(bool isSelectable)
+        {
+            IsSelectable = isSelectable;
             if ((ModuleList.Modules?.Count ?? 0) > 0)
                 Redraw();
         }
