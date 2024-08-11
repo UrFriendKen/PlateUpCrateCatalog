@@ -26,7 +26,7 @@ namespace KitchenCrateCatalog
             Entity applianceEntity = Create(GameData.Main.Get<Appliance>(949631021), LobbyPositionAnchors.Workshop + new Vector3(-1f, 0f, 0f), Vector3.forward);  // Accounting Desk
             Set(applianceEntity, default(CDoNotPersist));
             Set(applianceEntity, default(CTriggersCatalogMenu));
-            EntityManager.AddBuffer<CPlayerTriggeredMenu>(applianceEntity);
+            Set(applianceEntity, default(CTriggerPlayerSpecificUI));
         }
     }
 }

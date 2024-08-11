@@ -23,7 +23,7 @@ namespace KitchenCrateCatalog
             protected override void Initialise()
             {
                 base.Initialise();
-                Views = GetEntityQuery(typeof(CCatalogMenu), typeof(CLinkedTriggeredMenu), typeof(CLinkedView));
+                Views = GetEntityQuery(typeof(CCatalogMenuInfo), typeof(CLinkedView));
                 CrateAppliances = GetEntityQuery(typeof(CCrateAppliance));
                 RequireForUpdate(Views);
             }
@@ -40,35 +40,33 @@ namespace KitchenCrateCatalog
                 }
 
                 using NativeArray<Entity> entities = Views.ToEntityArray(Allocator.Temp);
+                using NativeArray<CCatalogMenuInfo> infos = Views.ToComponentDataArray<CCatalogMenuInfo>(Allocator.Temp);
                 using NativeArray<CLinkedView> views = Views.ToComponentDataArray<CLinkedView>(Allocator.Temp);
-                using NativeArray<CLinkedTriggeredMenu> menuLinks = Views.ToComponentDataArray<CLinkedTriggeredMenu>(Allocator.Temp);
                 for (int i = 0; i < views.Length; i++)
                 {
+                    CCatalogMenuInfo info = infos[i];
                     CLinkedView view = views[i];
-                    CLinkedTriggeredMenu menuLink = menuLinks[i];
 
                     SendUpdate(view, new ViewData()
                     {
-                        PlayerID = menuLink.BelongsToPlayerID,
+                        PlayerID = info.Player.PlayerID,
                         Items = applianceCounts
                     });
 
-                    bool isComplete = false;
-                    int selectedCrateApplianceID = 0;
+                    ResponseData result = default(ResponseData);
                     if (ApplyUpdates(view, delegate (ResponseData response)
                     {
-                        isComplete = response.IsComplete;
-                        selectedCrateApplianceID = response.SelectedItemID;
+                        result = response;
                     }, only_final_update: true))
                     {
-                        menuLink.IsComplete = isComplete;
-                        Set(entities[i], menuLink);
-                        if (isComplete && selectedCrateApplianceID != 0)
+                        info.IsComplete = result.IsComplete;
+                        Set(entities[i], info);
+                        if (info.IsComplete && result.SelectedItemID != 0)
                         {
                             Entity request = EntityManager.CreateEntity(typeof(CMoveApplianceCratesToRackRequest), typeof(CDoNotPersist));
                             Set(request, new CMoveApplianceCratesToRackRequest()
                             {
-                                ID = selectedCrateApplianceID
+                                ID = result.SelectedItemID
                             });
                         }
                     }
