@@ -121,11 +121,11 @@ namespace KitchenCrateCatalog
             Panel = Add<PanelElement>();
             ModuleList = new ModuleList();
             Menu = new CatalogMenu(base.transform, ModuleList);
-            Menu.OnRequestMenu += delegate (object _, Type t)
+            Menu.OnRequestMenu += delegate (object _, (Type, bool) t)
             {
                 CloseCatalog();
             };
-            Menu.OnRequestSkipStackMenu += delegate (object _, Type t)
+            Menu.OnRequestSkipStackMenu += delegate (object _, (Type, bool) t)
             {
                 CloseCatalog();
             };
@@ -220,7 +220,7 @@ namespace KitchenCrateCatalog
                 return;
             }
             Menu.SetItems(items.ToList());
-            Menu.SetSelectable(Session.CurrentGameNetworkMode == GameNetworkMode.Host);
+            Menu.SetSelectable(Session.HostIdentifier == 0);
             SelectedItemID = 0;
             Menu.SetupWithPlayer(PlayerID);
             Panel.SetColour(PlayerID);

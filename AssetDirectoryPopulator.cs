@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace KitchenCrateCatalog
 {
-    [FilterModes(AllowedModes = GameConnectionMode.All)]
+    [FilterModes(AllowedModes = GameSetupMode.All)]
     public class AssetDirectoryPopulator : GenericSystemBase, IModSystem
     {
         bool _hasPopulated = false;
